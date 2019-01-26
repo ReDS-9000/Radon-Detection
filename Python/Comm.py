@@ -5,7 +5,7 @@ import sys
 import alarm
 import datetime as dt
 import os
-
+import httplib
 
 def Connection():
 	try:
@@ -25,8 +25,15 @@ def Send(ser, cmd):
 	print("\n")
 
 	print("Waiting reply")
-	response = int(ser.readline())  # Attesa conferma
+	maxWaitingTime=2
+	try:
+		with alarm.Timeout(id_='a', seconds=4):
+			response = int(ser.readline())  # Attesa conferma
+	except alarm.TimeoutError as e:  # No impulses for 5 minutes
+			print('raised', e.id_)
+			response=-1
 	print("Got reply: " + str(response))
+	print'ok'
 	if response == 121:
 		return 0
 	elif response == 1:
@@ -42,7 +49,7 @@ def Listening(ser):
 
 def getStringTime():
 	ts = time.time()
-	st = dt.datetime.fromtimestamp(ts).strftime('%d\%m\%Y-%H:%M:%S')
+	st = dt.datetime.fromtimestamp(ts).strftime('%d-%m-%Y_%H:%M:%S')
 	return st
 
 
@@ -54,7 +61,7 @@ def saveFile(fileToSave, N_file):
 	# Genera il nuovo file con la data come nome
 	newFile = open(str(fileName), "w")
 	currentTimeString = getStringTime()
-	newFile.write("Detection starts at: " + currentTimeString + "\n")
+	newFile.write(currentTimeString + "\n")
 
 	return newFile
 
@@ -72,7 +79,17 @@ def Numero_ricevuto(numero):
 		print("Arduino blocked all the activities!")
 	if numero == 107:
 		serial.write('121')
-
+        
+  
+def have_internet():
+	conn = httplib.HTTPConnection("www.google.com", timeout=1.5)
+	try:
+		conn.request("HEAD", "/")
+		conn.close()
+		return True
+	except:
+		conn.close()
+	return False
 
 def main():
 	# Declaring the variable which counts how many detection we made at the start in order to get detection even during
@@ -109,7 +126,7 @@ def main():
 
     # Gets the current time and writes it on the log file
 	currentTimeString = getStringTime()
-	currentLog.write("Detection starts at: " + currentTimeString + "\n")
+	currentLog.write(currentTimeString + "\n")
 
     # Gets the detection starting time in seconds
 	startTimeInS = time.time()
@@ -117,12 +134,28 @@ def main():
 
     # At this point Arduino's working and python can start listening for signals (bip)
 	while 1:
-
+		if dt.datetime.fromtimestamp(time.time()).strftime('%H')=='19':
+			ser.write('10')
+		connection=have_internet()
+		if connection==True:
+			ser.write('8')
+			ser.write('11')
+			saveFile(currentLog, fileNumber)
+			os.system('python SendMail.py &')
+			time.sleep(15)
+			ser.write('9')
+			print "STACCAH STACCAH"
+			time.sleep(10)
+			startTimeWrite=time.time()
+			startTimeInS=time.time()
+			fileNumber=0
+		elif connection==False:
+			ser.write('9')
         # Every fourth of an hour it prints the time along with how many detection it made and checks if Arduino's
         # working
 		finishTimeWrite = time.time()
 		if calculateDelta(startTimeWrite, finishTimeWrite) >= 900:
-			currentLog.write(getStringTime() + ',' + str(bip_tot))  # fa il timestamp dell'ultimo  quarto d'ora''
+			currentLog.write(getStringTime() + ',' + str(bip_tot) + "\n")  # fa il timestamp dell'ultimo  quarto d'ora''
 			startTimeWrite = time.time()
 			bip_tot = 0
 			Check = Send(ser, str(107))
@@ -132,10 +165,10 @@ def main():
 			elif (check == 1):
 				bip_tot += 1
 
+
         # Every hour it saves the log and it creates a new one
 		finishTimeInS = time.time()
 		if calculateDelta(startTimeInS, finishTimeInS) >= 3600:
-
 			fileNumber += 1
 			currentLog = saveFile(currentLog, fileNumber)
 			startTimeInS = time.time()
@@ -143,7 +176,7 @@ def main():
         # Following code puts a maximun waiting time for a detection to arrive, if nothing arrives in 300 s, it breaks
         # the listening and checks if Arduino's working
 
-		maxWaitingTime = 300  # Seconds
+		maxWaitingTime = 60  # Seconds
 		bip = 0
 
 		try:
@@ -167,3 +200,4 @@ def main():
 
 if __name__ == "__main__":
 	sys.exit(main())
+#################################################################################################
