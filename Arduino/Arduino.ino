@@ -49,16 +49,29 @@ MA 02110-1301, USA.
 #include <SPI.h>
 
 
-int stateLed = 13;
+int stateLed = 6;
 int errLed = 12;
 int actLed = 11;
 int connLed = 10;
 int disconnLed = 9;
 int geiger = 2;
-int geigerpowah = 4;
-int reset = 2;
+int reset=4;
 int act=0;
+int stat=1;
+int brightness = 0;   
+int fadeAmount = 5;
 
+
+void stateFade(){
+  if (stat==2) {
+  analogWrite(stateLed, brightness);    
+  brightness = brightness + fadeAmount;
+ 
+  if (brightness == 0 || brightness == 255) {
+    fadeAmount = -fadeAmount ; 
+  }        
+  delay(30);         
+  }  }
 
 void allOff() {
     digitalWrite(stateLed, LOW);
@@ -77,7 +90,7 @@ void allOff() {
 void actBlink() {
  
  digitalWrite(actLed, HIGH);
- delay(100);
+ delay(500);
  digitalWrite(actLed, LOW);
   
 }
@@ -120,11 +133,15 @@ void ledTest() {
   delay(200);
   digitalWrite(stateLed, LOW);
   delay(500);
-  digitalWrite(stateLed, LOW);
+  digitalWrite(stateLed, HIGH);
 
 }
 
-void tube_impulse() {  Serial.println(1);}
+void tube_impulse() {  
+  Serial.println(1);
+  actBlink();
+
+}
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -143,10 +160,11 @@ void setup(){
   pinMode(connLed, OUTPUT);
   pinMode(disconnLed, OUTPUT);
   pinMode(geiger, INPUT);
-  pinMode(geigerpowah, OUTPUT);
+  pinMode(reset, OUTPUT);
   ledTest();
   
-  digitalWrite(geigerpowah, HIGH);
+  
+  digitalWrite(reset, HIGH);
   digitalWrite(geiger, LOW);
   
   
@@ -156,6 +174,7 @@ void setup(){
   attachInterrupt(0, tube_impulse, FALLING); //START
   
   allOff();
+  digitalWrite(stateLed, HIGH);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -168,9 +187,11 @@ void loop(){
     switch (msg) {
     case 2:
       digitalWrite(stateLed, HIGH);
+      stat=1;
       break;
     case 3:
       digitalWrite(stateLed, LOW);
+      stat=0;
       break;
     case 4:
       digitalWrite(errLed, HIGH);
@@ -196,6 +217,9 @@ void loop(){
     case 11:
       digitalWrite(disconnLed, LOW);
       break;
+    case 12:
+      stat=2;
+      break;
     case 107:              //state check
       Serial.println(121);
       break;
@@ -217,7 +241,9 @@ void loop(){
       break;
       
   }
+ 
  }
+ stateFade();
 }
 
 
