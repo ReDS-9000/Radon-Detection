@@ -1,5 +1,4 @@
 #coding: utf-8
-print "Started"
 import os
 import smtplib
 from email.MIMEMultipart import MIMEMultipart
@@ -28,13 +27,6 @@ class mail:
 		body = self.body				#	CORPO
 		# FORMT #					#
 		self.msg.attach(MIMEText(self.body, 'plain'))	#	CREAZIONE MAIL
-		print "Mail created"				#	RIEPILOGO
-		print "--------------"				#	 (scopo illustrativo)
-		print "FROM: " + self.fromaddr			#	RIEPILOGO
-		print "TO: " + str(self.toaddr)			#	 (scopo illustrativo)
-		print "SUBJECT: " + self.subj			#	RIEPILOGO
-		print "\n |" + self.body	 		#	 (scopo illustrativo)
-		print "--------------"				#	RIEPILOGO
 		return self.msg					#
 
 	def attachThis(self):
@@ -76,55 +68,47 @@ class mail:
 
 
 def file_union():
-    Union=open('Union.txt','w')
-    N_file=1
-    while 1:
-	try:
-	    toopen=open('File'+str(N_file)+'.txt','r')
-	    towrite=toopen.readlines()
-	    towrite=''.join(towrite)
-	    Union.write(towrite)
-	    toopen.close()
-	    os.system('rm File'+str(N_file)+'.txt')
-	except:
-	    print'File uniti\n'
-	    break
-	N_file+=1
-    
-    Union=open('Union.txt','r')
-    first_and_last=Union.readlines()
-    
-    first=first_and_last[0]
-    first=list(first)
-    first.remove('\n')
-    print first
-    first=''.join(first)
-    
-    last=first_and_last[len(first_and_last)-1]
-    last=list(last)
-    last.remove('\n')
-    last=''.join(last)
-    
-    os.system('cp Union.txt '+str(first)+str('_')+str(last)+'.txt')
-    Union.close()
-    os.system('rm Union.txt')
-    return (str(first)+str('_')+str(last)+'.txt')
+	Union=open('Union.txt','w')
+	N_file=1
+	while 1:
+		try:
+			toopen=open('File'+str(N_file)+'.txt','r')
+			towrite=toopen.readlines()
+			towrite=''.join(towrite)
+			Union.write(towrite)
+			toopen.close()
+			os.system('rm File'+str(N_file)+'.txt')
+		except:
+			print'File uniti\n'
+			break
+		N_file+=1
+	Union.close()
+	Union=open('Union.txt','r')
+	first_and_last=Union.readlines()
+
+	first=first_and_last[0]
+	first=list(first)
+	first.remove('\n')
+	first=''.join(first)
+
+	last=first_and_last[len(first_and_last)-1]
+	last=list(last)
+	last.remove('\n')
+	last=''.join(last)
+	Union.close()
+	os.system('cp Union.txt '+str(first)+str('_')+str(last)+'.txt')
+	os.system('rm Union.txt')
+	return (str(first)+str('_')+str(last)+'.txt')
 
 
 File_txt=file_union()
-print 'file.txt'
-print File_txt
-Mail=mail(				#	CREAZIONE MAIL (fromaddress, password, toaddress, subject, body, filename, dirpath)
-"radon@majoranaorvieto.org",		#	INDIRIZZO MITTENTE
-"210radon86",				#	PASSWORD MITTENTE
-"peppedeninno@majoranaorvieto.org", 	#	INDIRIZZO DESTINATARIO
-"TEST",					#	OGGETTO
-					#	CORPO
-"""
-
-THIS IS A TEST
-
-""",
+Mail=mail(					#	CREAZIONE MAIL (fromaddress, password, toaddress, subject, body, filename, dirpath)
+"radon@majoranaorvieto.org",			#	INDIRIZZO MITTENTE
+"210radon86",					#	PASSWORD MITTENTE
+"os19_radon@majoranaorvieto.org", 	#	INDIRIZZO DESTINATARIO
+"RADON - RILEVAZIONE",						#	OGGETTO
+						#	CORPO
+"Nuova rilevazione",
 				#
 File_txt,			#	NOME FILE
 ""				#	PATH FILE
@@ -134,3 +118,4 @@ Mail.Create()
 
 Mail.attachThis()	#	INSERIMENTO DELL'ALLEGATO (Nome file CON ESTENSIONE,Directory del file CON / ALLA FINE)
 Mail.Send()
+os.system('rm '+str(File_txt))
