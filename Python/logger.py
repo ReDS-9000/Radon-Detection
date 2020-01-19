@@ -52,8 +52,7 @@ def CheckInternet():                                                            
 ser = Connection()
 
 #tutto sto coso serve pe aggiunge 15m senza srecchia il formato dell'ora#
-NextTime=datetime.now()+timedelta(minutes=15)
-NextTime=NextTime.strftime("%H:%M:%S")
+NextTime=(datetime.now()+timedelta(minutes=15)).strftime("%H:%M:%S")
 
 TIC = 0
 
@@ -62,7 +61,7 @@ os.system("touch /home/pi/radon/rilevazione.txt")
 while (True): 
 	Time = datetime.now ().strftime ("%H:%M:%S") 
 	if (NextTime <= Time): 
-		#qui crea il file finale, all'inizio lo chiamo solo rilevazione cosi la data la aggiungiamo all'ultimo prima di inviarla cosi non sbricchia la data# 
+		#qui crea il file finale, all'inizio lo chiamo solo rilevazione cosi la la aggiungiamo all'ultimo prima di inviarla cosi non sbricchia la data# 
 		FinalRilevation = open ("/home/pi/radon/rilevazione.txt", "a") 
 		FinalRilevation.write (str(datetime.now ().strftime ("%Y:%m:%d:%H:%M:%S") )+";" + str(TIC) + "\n")
 		FinalRilevation.close () 
@@ -70,9 +69,7 @@ while (True):
 		copyfile ("/home/pi/radon/rilevazione.txt", ("/home/pi/radon/backup/backup_" + str(datetime.now ().strftime ("%Y:%m:%d:%H:%M:%S") ) + ".txt")) 
 		TIC = 0
 
-		NextTime=datetime.now()+timedelta(minutes=15)
-		NextTime=data.strftime("%H:%M:%S")
-
+		NextTime=(datetime.now()+timedelta(minutes=15)).strftime("%H:%M:%S")
 	received = int(ser.readline()) 
 	if received == 1:
 		
