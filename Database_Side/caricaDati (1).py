@@ -23,7 +23,7 @@ def scaricaDati():
 
 def carica(dati):
 
-	db = pymysql.connect("192.168.5.2","Radon","Ioni2020!","Radon" )
+	db = pymysql.connect("ip","user","pasword","db" )
 	cursor = db.cursor()
 
 	id=dati["id"]
