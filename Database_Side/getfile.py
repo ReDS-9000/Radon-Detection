@@ -7,7 +7,7 @@ contatore=json.load(open("contatore.json","r"))
 detach_dir = ''
 
 m = imaplib.IMAP4_SSL("imap.gmail.com")
-m.login('radonthrowaway@gmail.com', 'Radon2020!')
+m.login('mail', 'passwd')
 
 m.select("inbox")
 
@@ -26,7 +26,7 @@ for emailid in items:
         continue
 
 
-    if mail["From"] == 'radonthrowaway@gmail.com':
+    if mail["From"] == 'mail':
         for part in mail.walk():
             if part.get_content_maintype() == 'multipart':
                 continue
