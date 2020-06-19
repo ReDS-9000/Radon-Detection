@@ -29,7 +29,7 @@ def esegui(command):
 
 def carica(dati):
 
-	db = pymysql.connect("192.168.5.3","Radon","Ioni2020!","Radon" )
+	db = pymysql.connect("ip","user","passwd","name" )
 	cursor = db.cursor()
 
 	id=dati["id"]
