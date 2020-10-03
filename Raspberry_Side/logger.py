@@ -75,7 +75,7 @@ def backup():
 	#scrive sul display "backup effettuato"
 	ser.write(3)
 	with open("/home/pi/radon/backup/backupConteggi.json","w") as outfile:
-		json.dump({"conteggi":totalCount},outfile,indent=8)
+		json.dump({"conteggi":totalCount,"startTime":startTime},outfile,indent=8)
 	return
 
 
@@ -103,6 +103,12 @@ def prendiConteggi():
 	conteggi=dati["conteggi"]
 	return conteggi
 
+def prendiTempo():
+	dati=json.load(open("/home/pi/radon/backup/backupConteggi.json","r"))
+	tempo=dati["startTime"]
+	if(tempo==0):
+		tempo=time.time()
+	return tempo
 
 
 #t.cancel() da infilare
@@ -112,27 +118,28 @@ global startTime
 
 sent=False
 totalCount = prendiConteggi()
+startTime=prendiTempo()
 
 ser=connection()
 
 if(not os.path.exists("/home/pi/radon/rilevazione.json")):
 	copyfile("/home/pi/radon/nativeJson.json","/home/pi/radon/rilevazione.json")
 
-startTime=time.time()
+
 
 
 
 scriviDati()
 checkInternet()
 
-while(1):
+while(1):#tic
 
 	received = int(ser.readline())
 
 	if(received==1):
 		totalCount+=1
 
-	elif(received==2):
+	elif(received==2):#power off
 		while(1):
 			try:
 				tsd.cancel()
@@ -146,11 +153,11 @@ while(1):
 			except:
 				continue
 		with open("/home/pi/radon/backup/backupConteggi.json","w") as outfile:
-			json.dump({"conteggi":totalCount},outfile,indent=8)
+			json.dump({"conteggi":totalCount,"startTime":startTime},outfile,indent=8)
 		#scrive sul display "raspberry spento, staccare la spina"
 		ser.write(5)
 		os.system("systemctl poweroff")
-	elif(received==3):
+	elif(received==3):#reset
 		while(1):
 			try:
 				tsd.cancel()
@@ -164,7 +171,7 @@ while(1):
 			except:
 				continue
 		with open("/home/pi/radon/backup/backupConteggi.json","w") as outfile:
-			json.dump({"conteggi":0},outfile,indent=8)
+			json.dump({"conteggi":0,"startTime":0},outfile,indent=8)
 		totalCount=0
 		startTime=time.time()
 		scriviDati()
