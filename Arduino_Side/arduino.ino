@@ -1,52 +1,37 @@
 #include "LiquidCrystal_PCF8574.h"
+#include <Wire.h>
 
 
-//LCD
-#define LCD_ADDRESS 0x3F //controllare shield
-#define LCD_ROWS 2
-#define LCD_COLUMNS 16
-#define SCROLL_DELAY 150
-#define BACKLIGHT 255
-LiquidCrystal_PCF8574 lcd;
+LiquidCrystal_PCF8574 lcd(0x27); //controllare scheda I2C
 
 
-/*
-
- lcd.clear();                          // Clear LCD screen.
- lcd.print("  Circuito.io  ");                   // Print print String to LCD on first line
- lcd.selectLine(2);                    // Set cursor at the begining of line 2
-
-*/
-
-int contatore = 0;
-int resetbtn = 0;
-int poweroff = 0;
 int totalCount = 0;
-
+int countmin= 0;    // TODO: calcolare conteggi al minuto
 const byte interruptPin = 2;
 
 
 void tic() {
-    totalCount++;
-    Serial.println(1); 
-    lcd.print(totalCount);
+  totalCount++;
+  Serial.println(1); 
 }
 
 void resetta() {
-    Serial.println(3);
-    totalCount = 0;
+  Serial.println(3);
+  totalCount = 0;
 }
 
 void poweroff() {
-
-    Serial.println(2);
-    lcd.clear()
-    lcd.print("   SPENTO")
-
+  Serial.println(2);
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("   SPENTO");
+  LowPower.deepSleep(10000);
 }
 
 void setup() {
-  lcd.begin(LCD_COLUMNS, LCD_ROWS, LCD_ADDRESS, BACKLIGHT); 
+  lcd.print("Rivelatore Radon");
+  lcd.setCursor(0, 1);
+  lcd.print("V 3.0");
   Serial.begin(115200);
   pinMode(8, INPUT);
   pinMode(7, INPUT);
@@ -54,17 +39,17 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(0), tic, CHANGE); //rivelatore
   attachInterrupt(digitalPinToInterrupt(1), resetta, CHANGE); //reset
   attachInterrupt(digitalPinToInterrupt(7), poweroff, CHANGE); //poweroff
+  delay(2000);
+  lcd.clear();
 }
 
 void loop() {
-  
+  lcd.setCursor(0, 0);
+  lcd.print("tot: ");
+  lcd.print(totalCount);
   lcd.setCursor(0, 1);
-  resetbtn = digitalRead(8);
-  poweroff = digitalRead(7);
-
- // Serial.println(totalCount);
-
+  lcd.print("/min: ");
+  lcd.print(countmin);
+  // Serial.println(totalCount);
 }
-
-
 
